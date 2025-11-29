@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from traducao import traduzir_programa
 
 #Funcao para criar uma caixa
 def criar_caixa(container, x, y, titulo):
@@ -60,37 +61,35 @@ def exibir_resultado(texto_validado):
 #verificacao para ver se ta certo o formato das instrucoes
 def processar_instrucoes():
     """
-    Funcao principal: Le a entrada, valida o formato e chama as outras funcoes.
+    Funcao principal: Le a entrada, traduz para binário e chama as outras funcoes.
     """
-    # "1.0" significa: Comece da linha 1, caractere 0.
-    # "end-1c" significa: Vá até o final, removendo a última quebra de linha automática.
-    conteudo_bruto = entrada.text.get("1.0", "end-1c") #Variavel que obtem as instrucoes.
+    conteudo_bruto = entrada.text.get("1.0", "end-1c")
     
-    linhas = conteudo_bruto.splitlines()
-    linhas_validas = []
-    
-    # Valida linha por linha antes de processar
-    for linha in linhas:
-        linha_limpa = linha.strip() 
+    # NOVA PARTE: Traduz para binário
+    try:
+        instrucoes_bin = traduzir_programa(conteudo_bruto)
         
-        if not linha_limpa:
-            continue # Pula linhas vazias
-            
-        partes = linha_limpa.split() 
+        # Formata o resultado com binário
+        texto_final = "PROGRAMA TRADUZIDO:\n\n"
+        for i, binario in enumerate(instrucoes_bin):
+            texto_final += f". {binario}\n"
         
-        # Validacao: Precisa ter exatamente 2 partes (Instrucao + Operando)
-        if len(partes) != 2:
-            label_resultado.config(
-                text=f"Erro de formato na linha:\n'{linha_limpa}'\n\nEsperado: INSTRUCAO OPERANDO", 
-                fg="red"
-            )
-            return # Interrompe se houver erro
+        # Salva e exibe (sua lógica original)
+        salvar_arquivo(texto_final)    
+        exibir_resultado(texto_final)
+        
+        # Sua lógica original de cores (mantida igual)
+        linhas = conteudo_bruto.splitlines()
+        if linhas:
+            primeira_instrucao = linhas[0].split()[0].upper() if linhas[0].strip() else ""
             
-        linhas_validas.append(linha_limpa)
-
-    # Se a lista de validas nao estiver vazia, prossegue
-    if linhas_validas:
-        texto_final = "\n".join(linhas_validas)
+            if primeira_instrucao == "ADD":
+                mudar_cor_caixa(caixa_acumulador, True)
+            else:
+                mudar_cor_caixa(caixa_acumulador, False)
+                
+    except Exception as e:
+        label_resultado.config(text=f"Erro na tradução:\n{str(e)}", fg="red")
         
         salvar_arquivo(texto_final)    
         exibir_resultado(texto_final)
@@ -160,3 +159,4 @@ caixa_ir = criar_caixa(frame_visualizacao, x=200, y=250, titulo="REGISTRADORES")
 
 #loop para manter a janela aberta.
 root.mainloop()
+
